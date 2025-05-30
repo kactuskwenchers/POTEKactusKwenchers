@@ -6,43 +6,37 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXContainerItemProxy section */
-		14C812562DEA3FC200D36549 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 14C8123D2DEA3FC000D36549 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 14C812442DEA3FC000D36549;
-			remoteInfo = POTE;
-		};
-		14C812602DEA3FC200D36549 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 14C8123D2DEA3FC000D36549 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 14C812442DEA3FC000D36549;
-			remoteInfo = POTE;
-		};
-/* End PBXContainerItemProxy section */
+/* Begin PBXBuildFile section */
+		14C812782DEA423E00D36549 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 14C812772DEA423E00D36549 /* FirebaseAnalytics */; };
+		14C8127A2DEA423E00D36549 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 14C812792DEA423E00D36549 /* FirebaseAuth */; };
+		14C8127C2DEA423E00D36549 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 14C8127B2DEA423E00D36549 /* FirebaseFirestore */; };
+		14C8127F2DEA426900D36549 /* MockReaderUI in Frameworks */ = {isa = PBXBuildFile; productRef = 14C8127E2DEA426900D36549 /* MockReaderUI */; };
+		14C812812DEA426900D36549 /* SquareMobilePaymentsSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 14C812802DEA426900D36549 /* SquareMobilePaymentsSDK */; };
+		14C812E02DEBBCF400D36549 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 14C812DF2DEBBCF400D36549 /* CoreLocation.framework */; };
+/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		14C812452DEA3FC000D36549 /* POTE.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = POTE.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		14C812552DEA3FC200D36549 /* POTETests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = POTETests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		14C8125F2DEA3FC200D36549 /* POTEUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = POTEUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		14C812DF2DEBBCF400D36549 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		14C812C62DEA5A9400D36549 /* Exceptions for "POTE" folder in "POTE" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.Plist,
+			);
+			target = 14C812442DEA3FC000D36549 /* POTE */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		14C812472DEA3FC000D36549 /* POTE */ = {
+		14C812A32DEA499400D36549 /* POTE */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				14C812C62DEA5A9400D36549 /* Exceptions for "POTE" folder in "POTE" target */,
+			);
 			path = POTE;
-			sourceTree = "<group>";
-		};
-		14C812582DEA3FC200D36549 /* POTETests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = POTETests;
-			sourceTree = "<group>";
-		};
-		14C812622DEA3FC200D36549 /* POTEUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = POTEUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -52,20 +46,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		14C812522DEA3FC200D36549 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		14C8125C2DEA3FC200D36549 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				14C812E02DEBBCF400D36549 /* CoreLocation.framework in Frameworks */,
+				14C812782DEA423E00D36549 /* FirebaseAnalytics in Frameworks */,
+				14C812812DEA426900D36549 /* SquareMobilePaymentsSDK in Frameworks */,
+				14C8127A2DEA423E00D36549 /* FirebaseAuth in Frameworks */,
+				14C8127C2DEA423E00D36549 /* FirebaseFirestore in Frameworks */,
+				14C8127F2DEA426900D36549 /* MockReaderUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,9 +61,8 @@
 		14C8123C2DEA3FC000D36549 = {
 			isa = PBXGroup;
 			children = (
-				14C812472DEA3FC000D36549 /* POTE */,
-				14C812582DEA3FC200D36549 /* POTETests */,
-				14C812622DEA3FC200D36549 /* POTEUITests */,
+				14C812A32DEA499400D36549 /* POTE */,
+				14C812DE2DEBBCF300D36549 /* Frameworks */,
 				14C812462DEA3FC000D36549 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -86,10 +71,16 @@
 			isa = PBXGroup;
 			children = (
 				14C812452DEA3FC000D36549 /* POTE.app */,
-				14C812552DEA3FC200D36549 /* POTETests.xctest */,
-				14C8125F2DEA3FC200D36549 /* POTEUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		14C812DE2DEBBCF300D36549 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				14C812DF2DEBBCF400D36549 /* CoreLocation.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -102,66 +93,26 @@
 				14C812412DEA3FC000D36549 /* Sources */,
 				14C812422DEA3FC000D36549 /* Frameworks */,
 				14C812432DEA3FC000D36549 /* Resources */,
+				14C812822DEA465500D36549 /* ShellScript */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				14C812472DEA3FC000D36549 /* POTE */,
+				14C812A32DEA499400D36549 /* POTE */,
 			);
 			name = POTE;
 			packageProductDependencies = (
+				14C812772DEA423E00D36549 /* FirebaseAnalytics */,
+				14C812792DEA423E00D36549 /* FirebaseAuth */,
+				14C8127B2DEA423E00D36549 /* FirebaseFirestore */,
+				14C8127E2DEA426900D36549 /* MockReaderUI */,
+				14C812802DEA426900D36549 /* SquareMobilePaymentsSDK */,
 			);
 			productName = POTE;
 			productReference = 14C812452DEA3FC000D36549 /* POTE.app */;
 			productType = "com.apple.product-type.application";
-		};
-		14C812542DEA3FC200D36549 /* POTETests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 14C8126C2DEA3FC200D36549 /* Build configuration list for PBXNativeTarget "POTETests" */;
-			buildPhases = (
-				14C812512DEA3FC200D36549 /* Sources */,
-				14C812522DEA3FC200D36549 /* Frameworks */,
-				14C812532DEA3FC200D36549 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				14C812572DEA3FC200D36549 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				14C812582DEA3FC200D36549 /* POTETests */,
-			);
-			name = POTETests;
-			packageProductDependencies = (
-			);
-			productName = POTETests;
-			productReference = 14C812552DEA3FC200D36549 /* POTETests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		14C8125E2DEA3FC200D36549 /* POTEUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 14C8126F2DEA3FC200D36549 /* Build configuration list for PBXNativeTarget "POTEUITests" */;
-			buildPhases = (
-				14C8125B2DEA3FC200D36549 /* Sources */,
-				14C8125C2DEA3FC200D36549 /* Frameworks */,
-				14C8125D2DEA3FC200D36549 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				14C812612DEA3FC200D36549 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				14C812622DEA3FC200D36549 /* POTEUITests */,
-			);
-			name = POTEUITests;
-			packageProductDependencies = (
-			);
-			productName = POTEUITests;
-			productReference = 14C8125F2DEA3FC200D36549 /* POTEUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -176,14 +127,6 @@
 					14C812442DEA3FC000D36549 = {
 						CreatedOnToolsVersion = 16.2;
 					};
-					14C812542DEA3FC200D36549 = {
-						CreatedOnToolsVersion = 16.2;
-						TestTargetID = 14C812442DEA3FC000D36549;
-					};
-					14C8125E2DEA3FC200D36549 = {
-						CreatedOnToolsVersion = 16.2;
-						TestTargetID = 14C812442DEA3FC000D36549;
-					};
 				};
 			};
 			buildConfigurationList = 14C812402DEA3FC000D36549 /* Build configuration list for PBXProject "POTE" */;
@@ -195,14 +138,16 @@
 			);
 			mainGroup = 14C8123C2DEA3FC000D36549;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				14C812762DEA423E00D36549 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				14C8127D2DEA426900D36549 /* XCRemoteSwiftPackageReference "mobile-payments-sdk-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 14C812462DEA3FC000D36549 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				14C812442DEA3FC000D36549 /* POTE */,
-				14C812542DEA3FC200D36549 /* POTETests */,
-				14C8125E2DEA3FC200D36549 /* POTEUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -215,21 +160,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		14C812532DEA3FC200D36549 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		14C8125D2DEA3FC200D36549 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		14C812822DEA465500D36549 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "FRAMEWORKS=\"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\necho \"FRAMEWORKS path: ${FRAMEWORKS}\"\nls -l \"${FRAMEWORKS}\"\nif [ ! -d \"${FRAMEWORKS}/SquareMobilePaymentsSDK.framework\" ]; then\n    echo \"Error: SquareMobilePaymentsSDK.framework not found\"\n    exit 1\nfi\nchmod +x \"${FRAMEWORKS}/SquareMobilePaymentsSDK.framework/setup\"\necho \"Executing setup script: ${FRAMEWORKS}/SquareMobilePaymentsSDK.framework/setup\"\n\"${FRAMEWORKS}/SquareMobilePaymentsSDK.framework/setup\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		14C812412DEA3FC000D36549 /* Sources */ = {
@@ -239,34 +190,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		14C812512DEA3FC200D36549 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		14C8125B2DEA3FC200D36549 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		14C812572DEA3FC200D36549 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 14C812442DEA3FC000D36549 /* POTE */;
-			targetProxy = 14C812562DEA3FC200D36549 /* PBXContainerItemProxy */;
-		};
-		14C812612DEA3FC200D36549 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 14C812442DEA3FC000D36549 /* POTE */;
-			targetProxy = 14C812602DEA3FC200D36549 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		14C812672DEA3FC200D36549 /* Debug */ = {
@@ -390,14 +314,20 @@
 		};
 		14C8126A2DEA3FC200D36549 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 14C812A32DEA499400D36549 /* POTE */;
+			baseConfigurationReferenceRelativePath = Config.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"POTE/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = POTE/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = POTE;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -410,6 +340,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kactuskwenchers.POTE;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -418,14 +349,20 @@
 		};
 		14C8126B2DEA3FC200D36549 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 14C812A32DEA499400D36549 /* POTE */;
+			baseConfigurationReferenceRelativePath = Config.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"POTE/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = POTE/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = POTE;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -438,77 +375,10 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kactuskwenchers.POTE;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		14C8126D2DEA3FC200D36549 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kactuskwenchers.POTETests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/POTE.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/POTE";
-			};
-			name = Debug;
-		};
-		14C8126E2DEA3FC200D36549 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kactuskwenchers.POTETests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/POTE.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/POTE";
-			};
-			name = Release;
-		};
-		14C812702DEA3FC200D36549 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kactuskwenchers.POTEUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = POTE;
-			};
-			name = Debug;
-		};
-		14C812712DEA3FC200D36549 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kactuskwenchers.POTEUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = POTE;
 			};
 			name = Release;
 		};
@@ -533,25 +403,54 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		14C8126C2DEA3FC200D36549 /* Build configuration list for PBXNativeTarget "POTETests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				14C8126D2DEA3FC200D36549 /* Debug */,
-				14C8126E2DEA3FC200D36549 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		14C8126F2DEA3FC200D36549 /* Build configuration list for PBXNativeTarget "POTEUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				14C812702DEA3FC200D36549 /* Debug */,
-				14C812712DEA3FC200D36549 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		14C812762DEA423E00D36549 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.13.0;
+			};
+		};
+		14C8127D2DEA426900D36549 /* XCRemoteSwiftPackageReference "mobile-payments-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/square/mobile-payments-sdk-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.2.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		14C812772DEA423E00D36549 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 14C812762DEA423E00D36549 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		14C812792DEA423E00D36549 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 14C812762DEA423E00D36549 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		14C8127B2DEA423E00D36549 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 14C812762DEA423E00D36549 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		14C8127E2DEA426900D36549 /* MockReaderUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 14C8127D2DEA426900D36549 /* XCRemoteSwiftPackageReference "mobile-payments-sdk-ios" */;
+			productName = MockReaderUI;
+		};
+		14C812802DEA426900D36549 /* SquareMobilePaymentsSDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 14C8127D2DEA426900D36549 /* XCRemoteSwiftPackageReference "mobile-payments-sdk-ios" */;
+			productName = SquareMobilePaymentsSDK;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 14C8123D2DEA3FC000D36549 /* Project object */;
 }

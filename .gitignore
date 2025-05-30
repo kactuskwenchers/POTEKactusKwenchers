@@ -6,3 +6,7 @@ DerivedData/
 DerivedData/
 *.xcuserproject
 *.xcuserstate
+*.xcconfig
+DerivedData/
+*.xcuserproject
+*.xcuserstate

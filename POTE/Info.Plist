@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
+    <key>CFBundleDisplayName</key>
+    <string>POTE</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>We use Bluetooth to connect to Square readers for payment processing.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to verify transactions with Square.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Some Square readers use the microphone to process payments.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+    <key>SQUARE_APPLICATION_ID</key>
+    <string>$(SQUARE_APPLICATION_ID)</string>
+    <key>SQUARE_ACCESS_TOKEN</key>
+    <string>$(SQUARE_ACCESS_TOKEN)</string>
+    <key>SQUARE_LOCATION_ID</key>
+    <string>$(SQUARE_LOCATION_ID)</string>
+</dict>
+
+
+</plist>
