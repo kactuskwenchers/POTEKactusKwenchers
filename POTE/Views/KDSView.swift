@@ -86,6 +86,6 @@ struct KDSView_Previews: PreviewProvider {
     static var previews: some View {
         KDSView(category: "Drink")
             .environmentObject(MenuViewModel.shared)
-            .previewDevice(PreviewDevice(rawValue: "iPad (10th generation)")))
+            .previewDevice(PreviewDevice(rawValue: "iPad (10th generation)"))
     }
 }

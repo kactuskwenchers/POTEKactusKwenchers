@@ -7,7 +7,6 @@ class OrderViewModel: ObservableObject {
     @Published var total: Double = 0.0
     @Published var orderNumber: Int?
     private var cancellables = Set<AnyCancellable>()
-    private static var lastOrderNumber: Int = 0 // Persist this in production
     
     func addItem(_ menuItem: MenuItem) {
         if let index = orderItems.firstIndex(where: { $0.itemId == menuItem.id }) {
@@ -26,10 +25,9 @@ class OrderViewModel: ObservableObject {
     }
     
     func saveOrder(cashierId: String) async throws {
-        // Auto-generate order number
-        OrderViewModel.lastOrderNumber += 1
-        let orderNumber = OrderViewModel.lastOrderNumber
-        self.orderNumber = orderNumber
+        guard let orderNumber = orderNumber else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Order number not set"])
+        }
         
         let order = Order(
             id: UUID().uuidString,

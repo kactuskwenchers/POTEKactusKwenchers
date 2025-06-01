@@ -7,11 +7,11 @@
 
 import SwiftUI
 struct OrderCard: View {
-    let order: OrderCardModel
+    let order: Order
     let menuViewModel: MenuViewModel
     let onStatusChange: ((String) -> Void)? // Optional, for cases where not needed
 
-    init(order: OrderCardModel, menuViewModel: MenuViewModel, onStatusChange: ((String) -> Void)? = nil) {
+    init(order: Order, menuViewModel: MenuViewModel, onStatusChange: ((String) -> Void)? = nil) {
         self.order = order
         self.menuViewModel = menuViewModel
         self.onStatusChange = onStatusChange
@@ -77,7 +77,7 @@ struct OrderCard: View {
 struct OrderCard_Previews: PreviewProvider {
     static var previews: some View {
         OrderCard(
-            order: OrderCardModel(
+            order: Order(
                 id: UUID().uuidString,
                 items: [OrderItem(itemId: "item2", quantity: 1)],
                 total: 8.99,
