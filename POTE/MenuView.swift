@@ -14,11 +14,17 @@ struct MenuView: View {
     @State private var showTransactionSearch = false
     @State private var showLogoutConfirmation = false
     @State private var selectedCategory = "Kickers"
+    @State private var showSettingsPopup = false
     
     private let categories = ["Kickers", "Kolas", "Kwenchers", "Toast"]
     
     var filteredItems: [MenuItem] {
         viewModel.items.filter { $0.category == selectedCategory }
+    }
+    
+    // Computed property for manager status
+    private var isManager: Bool {
+        authViewModel.cashier?.role.lowercased() == "manager"
     }
     
     var body: some View {
@@ -28,237 +34,35 @@ struct MenuView: View {
             
             GeometryReader { geometry in
                 VStack(spacing: 0) {
-                    // Header with Employee Details
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("POTE POS")
-                                .font(.system(size: 32, weight: .bold))
-                                .foregroundColor(Color(hex: "#2E7D32"))
-                            if let cashier = authViewModel.cashier {
-                                Text("\(cashier.firstName ?? "Unknown") \(cashier.lastName ?? "Employee") - \(cashier.role.capitalized)")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(.gray)
-                            } else {
-                                Text("No Cashier Logged In")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                        Spacer()
-                    }
-                    .padding(.top, 24)
-                    .padding(.horizontal, 16)
-                    .background(Color.white)
+                    // Use renamed MenuHeaderView
+                    MenuHeaderView(
+                        authViewModel: authViewModel,
+                        isManager: isManager,
+                        onSettingsTap: { showSettingsPopup = true }
+                    )
                     
                     HStack(spacing: 0) {
-                        // Left Sidebar: Order
-                        VStack(spacing: 0) {
-                            // Order Items
-                            ScrollView {
-                                LazyVStack(spacing: 12) {
-                                    if orderViewModel.orderItems.isEmpty {
-                                        Text("No items in order")
-                                            .font(.system(size: 18, weight: .medium))
-                                            .foregroundColor(.gray)
-                                            .padding(.top, 20)
-                                    } else {
-                                        ForEach(orderViewModel.orderItems.indices, id: \.self) { index in
-                                            let orderItem = orderViewModel.orderItems[index]
-                                            OrderItemRow(
-                                                orderItem: orderItem,
-                                                itemName: viewModel.getItemName(forId: orderItem.itemId),
-                                                isTapped: buttonTappedId == orderItem.itemId,
-                                                onRemove: {
-                                                    withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
-                                                        buttonTappedId = orderItem.itemId
-                                                    }
-                                                    orderViewModel.orderItems[index].quantity -= 1
-                                                    if orderViewModel.orderItems[index].quantity <= 0 {
-                                                        orderViewModel.orderItems.remove(at: index)
-                                                    }
-                                                    orderViewModel.calculateTotal()
-                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                                        buttonTappedId = nil
-                                                    }
-                                                }
-                                            )
-                                            .padding(.horizontal, 16)
-                                            .padding(.vertical, 4)
-                                        }
-                                    }
-                                }
-                                .padding(.vertical, 16)
-                            }
-                            
-                            // Total and Action Buttons
-                            VStack(spacing: 10) {
-                                HStack {
-                                    Text("Total:")
-                                        .font(.system(size: 24, weight: .semibold))
-                                        .foregroundColor(.primary)
-                                    Spacer()
-                                    Text("$\(String(format: "%.2f", orderViewModel.total))")
-                                        .font(.system(size: 24, weight: .semibold))
-                                        .foregroundColor(.primary)
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 10)
-                                
-                                if !orderViewModel.orderItems.isEmpty {
-                                    HStack(spacing: 10) {
-                                        Button(action: {
-                                            isToGo = true
-                                            showOrderNumberPrompt = true
-                                        }) {
-                                            Text("To Go")
-                                                .font(.system(size: 20, weight: .semibold))
-                                                .foregroundColor(.white)
-                                                .padding(.vertical, 15)
-                                                .padding(.horizontal, 20)
-                                                .frame(maxWidth: .infinity, minHeight: 60)
-                                                .background(Color(hex: "#0288D1"))
-                                                .cornerRadius(12)
-                                        }
-                                        
-                                        Button(action: {
-                                            isToGo = false
-                                            showOrderNumberPrompt = true
-                                        }) {
-                                            Text("Dine In")
-                                                .font(.system(size: 20, weight: .semibold))
-                                                .foregroundColor(.white)
-                                                .padding(.vertical, 15)
-                                                .padding(.horizontal, 20)
-                                                .frame(maxWidth: .infinity, minHeight: 60)
-                                                .background(Color(hex: "#2E7D32"))
-                                                .cornerRadius(12)
-                                        }
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.bottom, 10)
-                                }
-                            }
-                            .background(Color.white)
-                            .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: -2)
-                        }
-                        .frame(width: geometry.size.width * 0.25)
-                        .background(Color.white)
+                        OrderSidebarView(
+                            orderViewModel: orderViewModel,
+                            viewModel: viewModel,
+                            buttonTappedId: $buttonTappedId,
+                            isToGo: $isToGo,
+                            showOrderNumberPrompt: $showOrderNumberPrompt,
+                            geometry: geometry
+                        )
                         
-                        // Main Content: Categories and Menu Items
-                        VStack(spacing: 0) {
-                            // Categories Bar
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 10) {
-                                    ForEach(categories, id: \.self) { category in
-                                        Button(action: {
-                                            selectedCategory = category
-                                        }) {
-                                            Text(category)
-                                                .font(.system(size: 20, weight: .semibold))
-                                                .foregroundColor(selectedCategory == category ? .white : .gray)
-                                                .padding(.vertical, 10)
-                                                .padding(.horizontal, 20)
-                                                .background(selectedCategory == category ? Color(hex: "#2E7D32") : Color.clear)
-                                                .cornerRadius(10)
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                            }
-                            .background(Color.white)
-                            .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 2)
-                            
-                            // Menu Items Grid
-                            ScrollView {
-                                LazyVGrid(
-                                    columns: [
-                                        GridItem(.flexible(), spacing: 24),
-                                        GridItem(.flexible(), spacing: 24),
-                                        GridItem(.flexible(), spacing: 24)
-                                    ],
-                                    spacing: 24
-                                ) {
-                                    ForEach(filteredItems) { item in
-                                        MenuItemCard(
-                                            item: item,
-                                            isTapped: buttonTappedId == item.id,
-                                            onAdd: {
-                                                withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
-                                                    buttonTappedId = item.id
-                                                }
-                                                orderViewModel.addItem(item)
-                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                                    buttonTappedId = nil
-                                                }
-                                            }
-                                        )
-                                        .frame(minHeight: 240)
-                                    }
-                                }
-                                .padding(.horizontal, max(16, geometry.size.width * 0.02))
-                                .padding(.vertical, 24)
-                            }
-                            
-                            // Bottom Bar with Additional Actions
-                            HStack(spacing: 10) {
-                                Button(action: {
-                                    print("MenuView: Back button tapped, dismissing to LandingView")
-                                    navigateToPOS = false
-                                    dismiss()
-                                }) {
-                                    HStack {
-                                        Image(systemName: "arrow.left.circle.fill")
-                                            .font(.system(size: 24))
-                                        Text("Back")
-                                            .font(.system(size: 20, weight: .semibold))
-                                    }
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .background(Color.gray)
-                                    .cornerRadius(12)
-                                    .frame(minHeight: 60)
-                                }
-                                
-                                Spacer()
-                                
-                                Button(action: {
-                                    showTransactionSearch = true
-                                }) {
-                                    HStack {
-                                        Image(systemName: "magnifyingglass")
-                                            .font(.system(size: 24))
-                                        Text("Search Orders")
-                                            .font(.system(size: 20, weight: .semibold))
-                                    }
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .background(Color(hex: "#0288D1"))
-                                    .cornerRadius(12)
-                                    .frame(minHeight: 60)
-                                }
-                                
-                                Button(action: {
-                                    showLogoutConfirmation = true
-                                }) {
-                                    HStack {
-                                        Image(systemName: "arrow.left.circle.fill")
-                                            .font(.system(size: 24))
-                                        Text("Cashier Logout")
-                                            .font(.system(size: 20, weight: .semibold))
-                                    }
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .background(Color(hex: "#FF6200"))
-                                    .cornerRadius(12)
-                                    .frame(minHeight: 60)
-                                }
-                            }
-                            .padding(.horizontal, max(16, geometry.size.width * 0.02))
-                            .padding(.vertical, 10)
-                            .background(Color.white)
-                            .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: -2)
-                        }
+                        MenuContentView(
+                            selectedCategory: $selectedCategory,
+                            categories: categories,
+                            filteredItems: filteredItems,
+                            buttonTappedId: $buttonTappedId,
+                            orderViewModel: orderViewModel,
+                            navigateToPOS: $navigateToPOS,
+                            showTransactionSearch: $showTransactionSearch,
+                            showLogoutConfirmation: $showLogoutConfirmation,
+                            dismiss: dismiss,
+                            geometry: geometry
+                        )
                     }
                 }
             }
@@ -302,9 +106,317 @@ struct MenuView: View {
             TransactionSearchView()
                 .environmentObject(authViewModel)
         }
+        .sheet(isPresented: $showSettingsPopup) {
+            SettingsView()
+                .presentationDetents([.medium])
+        }
         .onChange(of: navigateToPOS) { newValue in
             print("MenuView: navigateToPOS changed to \(newValue)")
         }
+    }
+}
+
+// Header View for MenuView, renamed to avoid conflicts
+struct MenuHeaderView: View {
+    @ObservedObject var authViewModel: AuthViewModel
+    let isManager: Bool
+    let onSettingsTap: () -> Void
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading) {
+                Text("POTE POS")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(Color(hex: "#2E7D32"))
+                if let cashier = authViewModel.cashier {
+                    Text("\(cashier.firstName ?? "Unknown") \(cashier.lastName ?? "Employee") - \(cashier.role.capitalized)")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.gray)
+                } else {
+                    Text("No Cashier Logged In")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.gray)
+                }
+            }
+            Spacer()
+            Button(action: onSettingsTap) {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(isManager ? Color(hex: "#2E7D32") : .gray)
+                    .padding(8)
+                    .background(Color.white)
+                    .clipShape(Circle())
+                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+            }
+            .disabled(!isManager)
+            .accessibilityLabel(isManager ? "Settings" : "Settings, disabled for non-managers")
+        }
+        .padding(.top, 24)
+        .padding(.horizontal, 16)
+        .background(Color.white)
+    }
+}
+
+// Extracted Order Sidebar View
+struct OrderSidebarView: View {
+    @ObservedObject var orderViewModel: OrderViewModel
+    @ObservedObject var viewModel: MenuViewModel
+    @Binding var buttonTappedId: String?
+    @Binding var isToGo: Bool
+    @Binding var showOrderNumberPrompt: Bool
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    if orderViewModel.orderItems.isEmpty {
+                        Text("No items in order")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(.gray)
+                            .padding(.top, 20)
+                    } else {
+                        ForEach(orderViewModel.orderItems.indices, id: \.self) { index in
+                            let orderItem = orderViewModel.orderItems[index]
+                            OrderItemRow(
+                                orderItem: orderItem,
+                                itemName: viewModel.getItemName(forId: orderItem.itemId),
+                                isTapped: buttonTappedId == orderItem.itemId,
+                                onRemove: {
+                                    withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                                        buttonTappedId = orderItem.itemId
+                                    }
+                                    orderViewModel.orderItems[index].quantity -= 1
+                                    if orderViewModel.orderItems[index].quantity <= 0 {
+                                        orderViewModel.orderItems.remove(at: index)
+                                    }
+                                    orderViewModel.calculateTotal()
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                        buttonTappedId = nil
+                                    }
+                                }
+                            )
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 4)
+                        }
+                    }
+                }
+                .padding(.vertical, 16)
+            }
+            
+            VStack(spacing: 10) {
+                HStack {
+                    Text("Total:")
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Text("$\(String(format: "%.2f", orderViewModel.total))")
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(.primary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                
+                if !orderViewModel.orderItems.isEmpty {
+                    HStack(spacing: 10) {
+                        Button(action: {
+                            isToGo = true
+                            showOrderNumberPrompt = true
+                        }) {
+                            Text("To Go")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.vertical, 15)
+                                .padding(.horizontal, 20)
+                                .frame(maxWidth: .infinity, minHeight: 60)
+                                .background(Color(hex: "#0288D1"))
+                                .cornerRadius(12)
+                        }
+                        
+                        Button(action: {
+                            isToGo = false
+                            showOrderNumberPrompt = true
+                        }) {
+                            Text("Dine In")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.vertical, 15)
+                                .padding(.horizontal, 20)
+                                .frame(maxWidth: .infinity, minHeight: 60)
+                                .background(Color(hex: "#2E7D32"))
+                                .cornerRadius(12)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 10)
+                }
+            }
+            .background(Color.white)
+            .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: -2)
+        }
+        .frame(width: geometry.size.width * 0.25)
+        .background(Color.white)
+    }
+}
+
+// Extracted Menu Content View
+struct MenuContentView: View {
+    @Binding var selectedCategory: String
+    let categories: [String]
+    let filteredItems: [MenuItem]
+    @Binding var buttonTappedId: String?
+    @ObservedObject var orderViewModel: OrderViewModel
+    @Binding var navigateToPOS: Bool
+    @Binding var showTransactionSearch: Bool
+    @Binding var showLogoutConfirmation: Bool
+    let dismiss: DismissAction
+    let geometry: GeometryProxy
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(categories, id: \.self) { category in
+                        Button(action: {
+                            selectedCategory = category
+                        }) {
+                            Text(category)
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(selectedCategory == category ? .white : .gray)
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 20)
+                                .background(selectedCategory == category ? Color(hex: "#2E7D32") : Color.clear)
+                                .cornerRadius(10)
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            }
+            .background(Color.white)
+            .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 2)
+            
+            ScrollView {
+                LazyVGrid(
+                    columns: [
+                        GridItem(.flexible(), spacing: 24),
+                        GridItem(.flexible(), spacing: 24),
+                        GridItem(.flexible(), spacing: 24)
+                    ],
+                    spacing: 24
+                ) {
+                    ForEach(filteredItems) { item in
+                        MenuItemCard(
+                            item: item,
+                            isTapped: buttonTappedId == item.id,
+                            onAdd: {
+                                withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                                    buttonTappedId = item.id
+                                }
+                                orderViewModel.addItem(item)
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    buttonTappedId = nil
+                                }
+                            }
+                        )
+                        .frame(minHeight: 240)
+                    }
+                }
+                .padding(.horizontal, max(16, geometry.size.width * 0.02))
+                .padding(.vertical, 24)
+            }
+            
+            HStack(spacing: 10) {
+                Button(action: {
+                    print("MenuView: Back button tapped, dismissing to LandingView")
+                    navigateToPOS = false
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "arrow.left.circle.fill")
+                            .font(.system(size: 24))
+                        Text("Back")
+                            .font(.system(size: 20, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.gray)
+                    .cornerRadius(12)
+                    .frame(minHeight: 60)
+                }
+                
+                Spacer()
+                
+                Button(action: {
+                    showTransactionSearch = true
+                }) {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 24))
+                        Text("Search Orders")
+                            .font(.system(size: 20, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color(hex: "#0288D1"))
+                    .cornerRadius(12)
+                    .frame(minHeight: 60)
+                }
+                
+                Button(action: {
+                    showLogoutConfirmation = true
+                }) {
+                    HStack {
+                        Image(systemName: "arrow.left.circle.fill")
+                            .font(.system(size: 24))
+                        Text("Cashier Logout")
+                            .font(.system(size: 20, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color(hex: "#FF6200"))
+                    .cornerRadius(12)
+                    .frame(minHeight: 60)
+                }
+            }
+            .padding(.horizontal, max(16, geometry.size.width * 0.02))
+            .padding(.vertical, 10)
+            .background(Color.white)
+            .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: -2)
+        }
+    }
+}
+
+struct SettingsView: View {
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("POS Settings")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(.primary)
+            
+            Text("Settings options will be added here.")
+                .font(.system(size: 16))
+                .foregroundColor(.gray)
+            
+            Button(action: {
+                dismiss()
+            }) {
+                Text("Close")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 24)
+                    .background(Color(hex: "#2E7D32"))
+                    .cornerRadius(10)
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(radius: 10)
+        .padding()
     }
 }
 
@@ -315,7 +427,6 @@ struct MenuItemCard: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            // Placeholder image
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(hex: "#F5F5F5"))
                 .frame(height: 160)
@@ -363,3 +474,6 @@ struct MenuView_Previews: PreviewProvider {
             .previewDevice(PreviewDevice(rawValue: "iPad (10th generation)"))
     }
 }
+
+
+
