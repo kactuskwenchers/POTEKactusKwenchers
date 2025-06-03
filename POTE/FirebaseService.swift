@@ -3,19 +3,6 @@ import FirebaseFirestore
 import FirebaseAuth
 import Combine
 
-// Struct to model tax rate data
-struct TaxRate: Identifiable, Codable {
-    let id: String // Document ID (e.g., "Mesa")
-    let city: String
-    let totalRate: Double
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case city
-        case totalRate = "totalrate"
-    }
-}
-
 class FirebaseService {
     static let shared = FirebaseService()
     private let db = Firestore.firestore()
@@ -51,22 +38,6 @@ class FirebaseService {
         }
         
         return employee
-    }
-    
-    func saveOrder(_ order: Order) async throws {
-        print("FirebaseService: Saving order with total: \(order.total), cashierId: \(order.cashierId)")
-        try await db.collection("orders").document(order.id).setData([
-            "id": order.id,
-            "items": order.items.map { ["itemId": $0.itemId, "quantity": $0.quantity] },
-            "total": order.total,
-            "status": order.status,
-            "timestamp": Timestamp(date: order.timestamp),
-            "cashierId": order.cashierId,
-            "orderNumber": order.orderNumber as Any,
-            "paymentId": order.paymentId as Any,
-            "paymentType": order.paymentType as Any
-        ])
-        print("FirebaseService: Order saved successfully")
     }
     
     func fetchItems() async throws -> [MenuItem] {
@@ -107,19 +78,5 @@ class FirebaseService {
             "status": status,
             "timestamp": Timestamp(date: Date())
         ])
-    }
-    
-    func fetchTaxRates() async throws -> [TaxRate] {
-        let snapshot = try await db.collection("sales_tax_rates").getDocuments()
-        return snapshot.documents.compactMap { document in
-            let data = document.data()
-            guard let city = data["city"] as? String,
-                  let totalRateString = data["totalrate"] as? String,
-                  let totalRate = Double(totalRateString) else {
-                print("FirebaseService: Failed to parse tax rate for document \(document.documentID)")
-                return nil
-            }
-            return TaxRate(id: document.documentID, city: city, totalRate: totalRate)
-        }
     }
 }

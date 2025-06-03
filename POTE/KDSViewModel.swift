@@ -54,10 +54,7 @@ class KDSViewModel: ObservableObject {
                             total: order.total,
                             status: order.status,
                             timestamp: order.timestamp,
-                            cashierId: order.cashierId,
-                            orderNumber: order.orderNumber,
-                            paymentId: order.paymentId,
-                            paymentType: order.paymentType
+                            cashierId: order.cashierId
                         )
                     } catch {
                         print("KDSViewModel: Error decoding order \(document.documentID): \(error)")

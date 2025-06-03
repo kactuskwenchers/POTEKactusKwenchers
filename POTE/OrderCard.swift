@@ -14,7 +14,8 @@ struct OrderCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Order #\(order.orderNumber ?? 0)")
+                // Use order.id instead of orderNumber, display last 8 characters for brevity
+                Text("Order #\(String(order.id.suffix(8)))")
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.black)
                 Spacer()
@@ -77,10 +78,7 @@ struct OrderCard_Previews: PreviewProvider {
                 total: 8.99,
                 status: "Pending",
                 timestamp: Date(),
-                cashierId: "test_cashier",
-                orderNumber: 42,
-                paymentId: nil,
-                paymentType: nil
+                cashierId: "test_cashier"
             ),
             menuViewModel: MenuViewModel.shared
         )

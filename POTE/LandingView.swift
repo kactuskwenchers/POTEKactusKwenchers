@@ -6,8 +6,6 @@ struct LandingView: View {
     @State private var selectedModule: String?
     @State private var isTappedCard: String?
     @State private var isLogoVisible = false
-    @State private var navigateToPOS = false
-    @State private var showCashierLogin = false
     
     var body: some View {
         NavigationStack {
@@ -44,22 +42,6 @@ struct LandingView: View {
                                 ],
                                 spacing: 24
                             ) {
-                                // POS
-                                NavigationCard(
-                                    title: "POS",
-                                    icon: "cart.fill",
-                                    isTapped: isTappedCard == "POS"
-                                )
-                                .onTapGesture {
-                                    withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
-                                        isTappedCard = "POS"
-                                    }
-                                    showCashierLogin = true
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                        isTappedCard = nil
-                                    }
-                                }
-
                                 // Drink KDS
                                 NavigationCard(
                                     title: "Drink KDS",
@@ -194,16 +176,7 @@ struct LandingView: View {
                     }
                 }
 
-                // Programmatic navigation for POS
-                NavigationLink(
-                    destination: MenuView(navigateToPOS: $navigateToPOS)
-                        .environmentObject(menuViewModel)
-                        .environmentObject(authViewModel),
-                    isActive: $navigateToPOS,
-                    label: { EmptyView() }
-                )
-
-                // Programmatic navigation for other modules
+                // Programmatic navigation for modules
                 NavigationLink(
                     destination: destinationView(),
                     isActive: Binding(
@@ -214,21 +187,8 @@ struct LandingView: View {
                 )
             }
             .navigationBarHidden(true)
-            .sheet(isPresented: $showCashierLogin, onDismiss: {
-                if authViewModel.cashier != nil {
-                    print("LandingView: Cashier logged in, setting navigateToPOS to true")
-                    navigateToPOS = true
-                }
-            }) {
-                CashierLoginView(showLogin: $showCashierLogin, navigateToPOS: $navigateToPOS)
-                    .environmentObject(authViewModel)
-                    .presentationDetents([.large])
-            }
             .task {
                 await menuViewModel.fetchItems()
-            }
-            .onChange(of: navigateToPOS) { newValue in
-                print("LandingView: navigateToPOS changed to \(newValue)")
             }
             .onChange(of: selectedModule) { newValue in
                 print("LandingView: selectedModule changed to \(String(describing: newValue))")
