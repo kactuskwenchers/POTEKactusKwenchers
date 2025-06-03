@@ -6,7 +6,17 @@ class OrderViewModel: ObservableObject {
     @Published var orderItems: [OrderItem] = []
     @Published var total: Double = 0.0
     @Published var orderNumber: Int?
+    @Published var taxRate: Double = UserDefaults.standard.double(forKey: "selectedTaxRate") / 100 // Load from UserDefaults
     private var cancellables = Set<AnyCancellable>()
+    
+    // Initialize with saved tax rate
+    init() {
+        if let savedRate = UserDefaults.standard.object(forKey: "selectedTaxRate") as? Double {
+            taxRate = savedRate / 100 // Convert percentage to decimal
+        } else {
+            taxRate = 0.0 // Default to 0% if no rate is set
+        }
+    }
     
     func addItem(_ menuItem: MenuItem) {
         if let index = orderItems.firstIndex(where: { $0.itemId == menuItem.id }) {
@@ -18,10 +28,17 @@ class OrderViewModel: ObservableObject {
     }
     
     func calculateTotal() {
-        total = orderItems.reduce(0.0) { total, item in
+        let subtotal = orderItems.reduce(0.0) { total, item in
             let price = MenuViewModel.shared.getMenuItem(forId: item.itemId)?.price ?? 0.0
             return total + (price * Double(item.quantity))
         }
+        let tax = subtotal * taxRate
+        total = subtotal + tax
+    }
+    
+    func setTaxRate(_ rate: Double) {
+        taxRate = rate
+        calculateTotal()
     }
     
     func saveOrder(cashierId: String, paymentType: String, paymentId: String?) async throws {

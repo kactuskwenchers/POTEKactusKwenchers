@@ -3,6 +3,19 @@ import FirebaseFirestore
 import FirebaseAuth
 import Combine
 
+// Struct to model tax rate data
+struct TaxRate: Identifiable, Codable {
+    let id: String // Document ID (e.g., "Mesa")
+    let city: String
+    let totalRate: Double
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case city
+        case totalRate = "totalrate"
+    }
+}
+
 class FirebaseService {
     static let shared = FirebaseService()
     private let db = Firestore.firestore()
@@ -20,7 +33,7 @@ class FirebaseService {
         guard let userData = userDoc.data(),
               let email = userData["email"] as? String,
               let role = userData["role"] as? String else {
-            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User data not found"])
+            throw NSError(domain: "Error", code: -1, userInfo: [NSLocalizedDescriptionKey: "User data not found"])
         }
         return User(id: userId, email: email, role: role)
     }
@@ -34,7 +47,7 @@ class FirebaseService {
         print("FirebaseService: Query returned \(snapshot.documents.count) documents")
         guard let document = snapshot.documents.first,
               let employee = try? document.data(as: Employee.self) else {
-            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Employee not found"])
+            throw NSError(domain: "Error", code: -1, userInfo: [NSLocalizedDescriptionKey: "Employee not found"])
         }
         
         return employee
@@ -94,5 +107,19 @@ class FirebaseService {
             "status": status,
             "timestamp": Timestamp(date: Date())
         ])
+    }
+    
+    func fetchTaxRates() async throws -> [TaxRate] {
+        let snapshot = try await db.collection("sales_tax_rates").getDocuments()
+        return snapshot.documents.compactMap { document in
+            let data = document.data()
+            guard let city = data["city"] as? String,
+                  let totalRateString = data["totalrate"] as? String,
+                  let totalRate = Double(totalRateString) else {
+                print("FirebaseService: Failed to parse tax rate for document \(document.documentID)")
+                return nil
+            }
+            return TaxRate(id: document.documentID, city: city, totalRate: totalRate)
+        }
     }
 }

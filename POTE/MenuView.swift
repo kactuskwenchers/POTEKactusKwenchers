@@ -108,6 +108,7 @@ struct MenuView: View {
         }
         .sheet(isPresented: $showSettingsPopup) {
             SettingsView()
+                .environmentObject(orderViewModel) // Pass orderViewModel for tax rate
                 .presentationDetents([.medium])
         }
         .onChange(of: navigateToPOS) { newValue in
@@ -389,6 +390,11 @@ struct MenuContentView: View {
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var orderViewModel: OrderViewModel
+    @State private var taxRates: [TaxRate] = []
+    @State private var selectedCity: String = UserDefaults.standard.string(forKey: "selectedTaxCity") ?? ""
+    @State private var isLoading = false
+    @State private var errorMessage: String?
     
     var body: some View {
         VStack(spacing: 20) {
@@ -396,9 +402,49 @@ struct SettingsView: View {
                 .font(.system(size: 24, weight: .bold))
                 .foregroundColor(.primary)
             
-            Text("Settings options will be added here.")
-                .font(.system(size: 16))
-                .foregroundColor(.gray)
+            // Tax Rate Selector
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Sales Tax Location")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(.primary)
+                
+                if isLoading {
+                    ProgressView("Loading tax rates...")
+                } else if let error = errorMessage {
+                    Text("Error: \(error)")
+                        .font(.system(size: 16))
+                        .foregroundColor(.red)
+                } else if taxRates.isEmpty {
+                    Text("No tax rates available")
+                        .font(.system(size: 16))
+                        .foregroundColor(.gray)
+                } else {
+                    Picker("Select City", selection: $selectedCity) {
+                        ForEach(taxRates) { taxRate in
+                            Text("\(taxRate.city) (\(String(format: "%.1f", taxRate.totalRate))%)")
+                                .tag(taxRate.city)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: selectedCity) { newCity in
+                        if let selectedTaxRate = taxRates.first(where: { $0.city == newCity }) {
+                            orderViewModel.setTaxRate(selectedTaxRate.totalRate / 100) // Convert % to decimal
+                            UserDefaults.standard.set(newCity, forKey: "selectedTaxCity")
+                            UserDefaults.standard.set(selectedTaxRate.totalRate, forKey: "selectedTaxRate")
+                            orderViewModel.calculateTotal() // Recalculate total with new tax
+                        }
+                    }
+                    
+                    if !selectedCity.isEmpty {
+                        Text("Current Tax Rate: \(String(format: "%.1f", (orderViewModel.taxRate * 100)))%")
+                            .font(.system(size: 16))
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
+            .padding(.horizontal)
+            
+            Spacer()
             
             Button(action: {
                 dismiss()
@@ -417,6 +463,25 @@ struct SettingsView: View {
         .cornerRadius(12)
         .shadow(radius: 10)
         .padding()
+        .task {
+            // Fetch tax rates when SettingsView appears
+            isLoading = true
+            do {
+                taxRates = try await FirebaseService.shared.fetchTaxRates()
+                // Set initial tax rate if none selected
+                if selectedCity.isEmpty, let firstTaxRate = taxRates.first {
+                    selectedCity = firstTaxRate.city
+                    orderViewModel.setTaxRate(firstTaxRate.totalRate / 100)
+                    UserDefaults.standard.set(firstTaxRate.city, forKey: "selectedTaxCity")
+                    UserDefaults.standard.set(firstTaxRate.totalRate, forKey: "selectedTaxRate")
+                    orderViewModel.calculateTotal()
+                }
+                isLoading = false
+            } catch {
+                errorMessage = "Failed to load tax rates: \(error.localizedDescription)"
+                isLoading = false
+            }
+        }
     }
 }
 
@@ -469,11 +534,9 @@ struct MenuView_Previews: PreviewProvider {
     
     static var previews: some View {
         MenuView(navigateToPOS: $navigateToPOS)
-            .environmentObject(MenuViewModel.shared)
+            .environmentObject(MenuViewModel.shared) // Use shared instance
             .environmentObject(AuthViewModel())
+            .environmentObject(OrderViewModel())
             .previewDevice(PreviewDevice(rawValue: "iPad (10th generation)"))
     }
 }
-
-
-
