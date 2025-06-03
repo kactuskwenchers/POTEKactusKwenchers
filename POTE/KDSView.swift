@@ -1,15 +1,10 @@
-//
-//  KDSView.swift
-//  POTE
-//
-//  Created by Kacrtus Kwenchers on 5/31/25.
-//
 import SwiftUI
 import FirebaseFirestore
 
 struct KDSView: View {
     @StateObject private var viewModel: KDSViewModel
     @EnvironmentObject var menuViewModel: MenuViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State private var isLogoVisible = false
     private let category: String
 
@@ -36,7 +31,11 @@ struct KDSView: View {
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(Color(hex: "#2E7D32"))
                         Spacer()
-                        Button(action: { /* TODO: Log out */ }) {
+                        Button(action: {
+                            Task {
+                                await authViewModel.logout()
+                            }
+                        }) {
                             Text("Log Out")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.gray)
@@ -86,6 +85,7 @@ struct KDSView_Previews: PreviewProvider {
     static var previews: some View {
         KDSView(category: "Drink")
             .environmentObject(MenuViewModel.shared)
+            .environmentObject(AuthViewModel())
             .previewDevice(PreviewDevice(rawValue: "iPad (10th generation)"))
     }
 }

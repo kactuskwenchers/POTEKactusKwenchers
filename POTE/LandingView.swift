@@ -1,17 +1,14 @@
-//
-//  LandingView.swift
-//  POTE
-//
-//  Created by Kacrtus Kwenchers on 5/31/25.
-//
 import SwiftUI
 
 struct LandingView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var menuViewModel: MenuViewModel
     @State private var selectedModule: String?
     @State private var isTappedCard: String?
     @State private var isLogoVisible = false
-
+    @State private var navigateToPOS = false
+    @State private var showCashierLogin = false
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -57,7 +54,7 @@ struct LandingView: View {
                                     withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
                                         isTappedCard = "POS"
                                     }
-                                    selectedModule = "POS"
+                                    showCashierLogin = true
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                                         isTappedCard = nil
                                     }
@@ -197,7 +194,16 @@ struct LandingView: View {
                     }
                 }
 
-                // Programmatic navigation
+                // Programmatic navigation for POS
+                NavigationLink(
+                    destination: MenuView(navigateToPOS: $navigateToPOS)
+                        .environmentObject(menuViewModel)
+                        .environmentObject(authViewModel),
+                    isActive: $navigateToPOS,
+                    label: { EmptyView() }
+                )
+
+                // Programmatic navigation for other modules
                 NavigationLink(
                     destination: destinationView(),
                     isActive: Binding(
@@ -208,8 +214,24 @@ struct LandingView: View {
                 )
             }
             .navigationBarHidden(true)
+            .sheet(isPresented: $showCashierLogin, onDismiss: {
+                if authViewModel.cashier != nil {
+                    print("LandingView: Cashier logged in, setting navigateToPOS to true")
+                    navigateToPOS = true
+                }
+            }) {
+                CashierLoginView(showLogin: $showCashierLogin, navigateToPOS: $navigateToPOS)
+                    .environmentObject(authViewModel)
+                    .presentationDetents([.large])
+            }
             .task {
                 await menuViewModel.fetchItems()
+            }
+            .onChange(of: navigateToPOS) { newValue in
+                print("LandingView: navigateToPOS changed to \(newValue)")
+            }
+            .onChange(of: selectedModule) { newValue in
+                print("LandingView: selectedModule changed to \(String(describing: newValue))")
             }
         }
     }
@@ -218,9 +240,6 @@ struct LandingView: View {
     @ViewBuilder
     private func destinationView() -> some View {
         switch selectedModule {
-        case "POS":
-            MenuView()
-                .environmentObject(menuViewModel)
         case "DrinkKDS":
             DrinkKDSView()
                 .environmentObject(menuViewModel)
@@ -273,6 +292,7 @@ struct LandingView_Previews: PreviewProvider {
     static var previews: some View {
         LandingView()
             .environmentObject(MenuViewModel.shared)
+            .environmentObject(AuthViewModel())
             .previewDevice(PreviewDevice(rawValue: "iPad (10th generation)"))
     }
 }

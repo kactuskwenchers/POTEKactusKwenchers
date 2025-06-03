@@ -1,15 +1,9 @@
-//
-//  OrderCard.swift
-//  POTE
-//
-//  Created by Kacrtus Kwenchers on 5/31/25.
-//
-
 import SwiftUI
+
 struct OrderCard: View {
     let order: Order
     let menuViewModel: MenuViewModel
-    let onStatusChange: ((String) -> Void)? // Optional, for cases where not needed
+    let onStatusChange: ((String) -> Void)?
 
     init(order: Order, menuViewModel: MenuViewModel, onStatusChange: ((String) -> Void)? = nil) {
         self.order = order
@@ -84,7 +78,9 @@ struct OrderCard_Previews: PreviewProvider {
                 status: "Pending",
                 timestamp: Date(),
                 cashierId: "test_cashier",
-                orderNumber: 42
+                orderNumber: 42,
+                paymentId: nil,
+                paymentType: nil
             ),
             menuViewModel: MenuViewModel.shared
         )

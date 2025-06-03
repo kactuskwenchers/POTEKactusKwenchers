@@ -3,12 +3,23 @@ import SwiftUI
 struct MenuView: View {
     @EnvironmentObject var viewModel: MenuViewModel
     @StateObject private var orderViewModel = OrderViewModel()
-    @StateObject private var authViewModel = AuthViewModel()
+    @EnvironmentObject var authViewModel: AuthViewModel
+    @Environment(\.dismiss) var dismiss
+    @Binding var navigateToPOS: Bool
     @State private var buttonTappedId: String?
-    @State private var showOrderView = false
+    @State private var showOrderNumberPrompt = false
+    @State private var showPaymentView = false
+    @State private var orderNumberInput = ""
+    @State private var isToGo = false
+    @State private var showTransactionSearch = false
     @State private var showLogoutConfirmation = false
-    @State private var navigateToLanding = false
-    @State private var isLogoVisible = false
+    @State private var selectedCategory = "Kickers"
+    
+    private let categories = ["Kickers", "Kolas", "Kwenchers", "Toast"]
+    
+    var filteredItems: [MenuItem] {
+        viewModel.items.filter { $0.category == selectedCategory }
+    }
     
     var body: some View {
         ZStack {
@@ -17,136 +28,282 @@ struct MenuView: View {
             
             GeometryReader { geometry in
                 VStack(spacing: 0) {
-                    // Header with POTE branding
+                    // Header with Employee Details
                     HStack {
-                        Image("POTEIconSmall")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 48, height: 48)
-                            .foregroundColor(Color(hex: "#00FF00"))
-                        Text("POTE")
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundColor(Color(hex: "#2E7D32"))
+                        VStack(alignment: .leading) {
+                            Text("POTE POS")
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundColor(Color(hex: "#2E7D32"))
+                            if let cashier = authViewModel.cashier {
+                                Text("\(cashier.firstName ?? "Unknown") \(cashier.lastName ?? "Employee") - \(cashier.role.capitalized)")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.gray)
+                            } else {
+                                Text("No Cashier Logged In")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.gray)
+                            }
+                        }
                         Spacer()
                     }
                     .padding(.top, 24)
-                    .padding(.horizontal, 32)
-                    .opacity(isLogoVisible ? 1.0 : 0.0)
-                    .animation(.easeInOut(duration: 0.3), value: isLogoVisible)
-                    .onAppear { isLogoVisible = true }
+                    .padding(.horizontal, 16)
+                    .background(Color.white)
                     
-                    ScrollView {
-                        LazyVGrid(
-                            columns: [
-                                GridItem(.flexible(), spacing: 24),
-                                GridItem(.flexible(), spacing: 24),
-                                GridItem(.flexible(), spacing: 24)
-                            ],
-                            spacing: 24
-                        ) {
-                            ForEach(viewModel.items) { item in
-                                MenuItemCard(
-                                    item: item,
-                                    isTapped: buttonTappedId == item.id,
-                                    onAdd: {
-                                        withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
-                                            buttonTappedId = item.id
-                                        }
-                                        orderViewModel.addItem(item)
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                            buttonTappedId = nil
+                    HStack(spacing: 0) {
+                        // Left Sidebar: Order
+                        VStack(spacing: 0) {
+                            // Order Items
+                            ScrollView {
+                                LazyVStack(spacing: 12) {
+                                    if orderViewModel.orderItems.isEmpty {
+                                        Text("No items in order")
+                                            .font(.system(size: 18, weight: .medium))
+                                            .foregroundColor(.gray)
+                                            .padding(.top, 20)
+                                    } else {
+                                        ForEach(orderViewModel.orderItems.indices, id: \.self) { index in
+                                            let orderItem = orderViewModel.orderItems[index]
+                                            OrderItemRow(
+                                                orderItem: orderItem,
+                                                itemName: viewModel.getItemName(forId: orderItem.itemId),
+                                                isTapped: buttonTappedId == orderItem.itemId,
+                                                onRemove: {
+                                                    withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                                                        buttonTappedId = orderItem.itemId
+                                                    }
+                                                    orderViewModel.orderItems[index].quantity -= 1
+                                                    if orderViewModel.orderItems[index].quantity <= 0 {
+                                                        orderViewModel.orderItems.remove(at: index)
+                                                    }
+                                                    orderViewModel.calculateTotal()
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                                        buttonTappedId = nil
+                                                    }
+                                                }
+                                            )
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 4)
                                         }
                                     }
-                                )
-                                .frame(minHeight: 240)
-                            }
-                        }
-                        .padding(.horizontal, max(32, geometry.size.width * 0.05))
-                        .padding(.vertical, 24)
-                    }
-                    
-                    // Fixed bottom bar
-                    HStack(spacing: 24) {
-                        if !orderViewModel.orderItems.isEmpty {
-                            Button(action: {
-                                withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
-                                    showOrderView = true
                                 }
-                            }) {
+                                .padding(.vertical, 16)
+                            }
+                            
+                            // Total and Action Buttons
+                            VStack(spacing: 10) {
                                 HStack {
-                                    Image(systemName: "cart.fill")
-                                        .font(.system(size: 24))
-                                    Text("Cart (\(orderViewModel.orderItems.count))")
-                                        .font(.system(size: 20, weight: .semibold))
+                                    Text("Total:")
+                                        .font(.system(size: 24, weight: .semibold))
+                                        .foregroundColor(.primary)
                                     Spacer()
                                     Text("$\(String(format: "%.2f", orderViewModel.total))")
-                                        .font(.system(size: 20, weight: .semibold))
+                                        .font(.system(size: 24, weight: .semibold))
+                                        .foregroundColor(.primary)
                                 }
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [Color(hex: "#2E7D32"), Color(hex: "#388E3C")]),
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .cornerRadius(12)
-                                .frame(minHeight: 64)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                                
+                                if !orderViewModel.orderItems.isEmpty {
+                                    HStack(spacing: 10) {
+                                        Button(action: {
+                                            isToGo = true
+                                            showOrderNumberPrompt = true
+                                        }) {
+                                            Text("To Go")
+                                                .font(.system(size: 20, weight: .semibold))
+                                                .foregroundColor(.white)
+                                                .padding(.vertical, 15)
+                                                .padding(.horizontal, 20)
+                                                .frame(maxWidth: .infinity, minHeight: 60)
+                                                .background(Color(hex: "#0288D1"))
+                                                .cornerRadius(12)
+                                        }
+                                        
+                                        Button(action: {
+                                            isToGo = false
+                                            showOrderNumberPrompt = true
+                                        }) {
+                                            Text("Dine In")
+                                                .font(.system(size: 20, weight: .semibold))
+                                                .foregroundColor(.white)
+                                                .padding(.vertical, 15)
+                                                .padding(.horizontal, 20)
+                                                .frame(maxWidth: .infinity, minHeight: 60)
+                                                .background(Color(hex: "#2E7D32"))
+                                                .cornerRadius(12)
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.bottom, 10)
+                                }
                             }
+                            .background(Color.white)
+                            .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: -2)
                         }
+                        .frame(width: geometry.size.width * 0.25)
+                        .background(Color.white)
                         
-                        Spacer()
-                        
-                        Button(action: {
-                            showLogoutConfirmation = true
-                        }) {
-                            HStack {
-                                Image(systemName: "arrow.left.circle.fill")
-                                    .font(.system(size: 24))
-                                Text("Logout")
-                                    .font(.system(size: 20, weight: .semibold))
+                        // Main Content: Categories and Menu Items
+                        VStack(spacing: 0) {
+                            // Categories Bar
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 10) {
+                                    ForEach(categories, id: \.self) { category in
+                                        Button(action: {
+                                            selectedCategory = category
+                                        }) {
+                                            Text(category)
+                                                .font(.system(size: 20, weight: .semibold))
+                                                .foregroundColor(selectedCategory == category ? .white : .gray)
+                                                .padding(.vertical, 10)
+                                                .padding(.horizontal, 20)
+                                                .background(selectedCategory == category ? Color(hex: "#2E7D32") : Color.clear)
+                                                .cornerRadius(10)
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
                             }
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color(hex: "#FF6200"))
-                            .cornerRadius(12)
-                            .frame(minHeight: 64)
+                            .background(Color.white)
+                            .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 2)
+                            
+                            // Menu Items Grid
+                            ScrollView {
+                                LazyVGrid(
+                                    columns: [
+                                        GridItem(.flexible(), spacing: 24),
+                                        GridItem(.flexible(), spacing: 24),
+                                        GridItem(.flexible(), spacing: 24)
+                                    ],
+                                    spacing: 24
+                                ) {
+                                    ForEach(filteredItems) { item in
+                                        MenuItemCard(
+                                            item: item,
+                                            isTapped: buttonTappedId == item.id,
+                                            onAdd: {
+                                                withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                                                    buttonTappedId = item.id
+                                                }
+                                                orderViewModel.addItem(item)
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                                    buttonTappedId = nil
+                                                }
+                                            }
+                                        )
+                                        .frame(minHeight: 240)
+                                    }
+                                }
+                                .padding(.horizontal, max(16, geometry.size.width * 0.02))
+                                .padding(.vertical, 24)
+                            }
+                            
+                            // Bottom Bar with Additional Actions
+                            HStack(spacing: 10) {
+                                Button(action: {
+                                    print("MenuView: Back button tapped, dismissing to LandingView")
+                                    navigateToPOS = false
+                                    dismiss()
+                                }) {
+                                    HStack {
+                                        Image(systemName: "arrow.left.circle.fill")
+                                            .font(.system(size: 24))
+                                        Text("Back")
+                                            .font(.system(size: 20, weight: .semibold))
+                                    }
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Color.gray)
+                                    .cornerRadius(12)
+                                    .frame(minHeight: 60)
+                                }
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    showTransactionSearch = true
+                                }) {
+                                    HStack {
+                                        Image(systemName: "magnifyingglass")
+                                            .font(.system(size: 24))
+                                        Text("Search Orders")
+                                            .font(.system(size: 20, weight: .semibold))
+                                    }
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Color(hex: "#0288D1"))
+                                    .cornerRadius(12)
+                                    .frame(minHeight: 60)
+                                }
+                                
+                                Button(action: {
+                                    showLogoutConfirmation = true
+                                }) {
+                                    HStack {
+                                        Image(systemName: "arrow.left.circle.fill")
+                                            .font(.system(size: 24))
+                                        Text("Cashier Logout")
+                                            .font(.system(size: 20, weight: .semibold))
+                                    }
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Color(hex: "#FF6200"))
+                                    .cornerRadius(12)
+                                    .frame(minHeight: 60)
+                                }
+                            }
+                            .padding(.horizontal, max(16, geometry.size.width * 0.02))
+                            .padding(.vertical, 10)
+                            .background(Color.white)
+                            .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: -2)
                         }
                     }
-                    .padding(.horizontal, max(32, geometry.size.width * 0.05))
-                    .padding(.vertical, 16)
-                    .background(Color.white)
-                    .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: -2)
                 }
             }
         }
         .navigationBarHidden(true)
-        .alert("Confirm Logout", isPresented: $showLogoutConfirmation) {
+        .alert("Confirm Cashier Logout", isPresented: $showLogoutConfirmation) {
             Button("Cancel", role: .cancel) {}
             Button("Logout", role: .destructive) {
-                Task {
-                    await authViewModel.logout()
-                    if authViewModel.user == nil {
-                        navigateToLanding = true
-                    }
-                }
+                print("MenuView: Logging out cashier and dismissing to LandingView")
+                authViewModel.logoutCashier()
+                navigateToPOS = false
+                dismiss()
             }
         } message: {
-            Text("Are you sure you want to log out?")
+            Text("Are you sure you want to log out as cashier?")
         }
-        .sheet(isPresented: $showOrderView) {
-            OrderView(
-                viewModel: orderViewModel,
-                navigateToLanding: $navigateToLanding
-            )
-            .environmentObject(viewModel)
-            .onChange(of: navigateToLanding) { newValue in
-                if newValue {
-                    showOrderView = false
-                    navigateToLanding = false
+        .sheet(isPresented: $showOrderNumberPrompt) {
+            OrderNumberPromptView(
+                orderNumberInput: $orderNumberInput,
+                onConfirm: {
+                    if let orderNumber = Int(orderNumberInput) {
+                        orderViewModel.orderNumber = orderNumber
+                        showOrderNumberPrompt = false
+                        showPaymentView = true
+                    }
+                },
+                onCancel: {
+                    showOrderNumberPrompt = false
                 }
-            }
+            )
+            .presentationDetents([.large])
+        }
+        .sheet(isPresented: $showPaymentView) {
+            PaymentView(
+                amount: Int(orderViewModel.total * 100),
+                orderViewModel: orderViewModel
+            )
+            .environmentObject(authViewModel)
+        }
+        .sheet(isPresented: $showTransactionSearch) {
+            TransactionSearchView()
+                .environmentObject(authViewModel)
+        }
+        .onChange(of: navigateToPOS) { newValue in
+            print("MenuView: navigateToPOS changed to \(newValue)")
         }
     }
 }
@@ -197,9 +354,12 @@ struct MenuItemCard: View {
 }
 
 struct MenuView_Previews: PreviewProvider {
+    @State static var navigateToPOS = false
+    
     static var previews: some View {
-        MenuView()
+        MenuView(navigateToPOS: $navigateToPOS)
             .environmentObject(MenuViewModel.shared)
+            .environmentObject(AuthViewModel())
             .previewDevice(PreviewDevice(rawValue: "iPad (10th generation)"))
     }
 }

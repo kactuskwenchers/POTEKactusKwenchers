@@ -1,9 +1,3 @@
-//
-//  KDSViewModel.swift
-//  POTE
-//
-//  Created by Kacrtus Kwenchers on 5/31/25.
-//
 import Foundation
 import Combine
 import FirebaseFirestore
@@ -61,7 +55,9 @@ class KDSViewModel: ObservableObject {
                             status: order.status,
                             timestamp: order.timestamp,
                             cashierId: order.cashierId,
-                            orderNumber: order.orderNumber
+                            orderNumber: order.orderNumber,
+                            paymentId: order.paymentId,
+                            paymentType: order.paymentType
                         )
                     } catch {
                         print("KDSViewModel: Error decoding order \(document.documentID): \(error)")

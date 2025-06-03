@@ -24,23 +24,25 @@ class OrderViewModel: ObservableObject {
         }
     }
     
-    func saveOrder(cashierId: String) async throws {
+    func saveOrder(cashierId: String, paymentType: String, paymentId: String?) async throws {
         guard let orderNumber = orderNumber else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Order number not set"])
         }
         
+        print("OrderViewModel: Received cashierId: \(cashierId) for saving order")
         let order = Order(
             id: UUID().uuidString,
             items: orderItems,
             total: total,
-            status: "Pending",
+            status: "Completed",
             timestamp: Date(),
             cashierId: cashierId,
-            orderNumber: orderNumber
+            orderNumber: orderNumber,
+            paymentId: paymentId,
+            paymentType: paymentType
         )
-        print("OrderViewModel: Saving order with total: \(order.total), orderNumber: \(orderNumber)")
+        print("OrderViewModel: Saving order with total: \(order.total), orderNumber: \(orderNumber), paymentType: \(paymentType), cashierId: \(order.cashierId)")
         try await FirebaseService.shared.saveOrder(order)
-        // Do not reset here; reset after payment
     }
     
     func resetOrder() {

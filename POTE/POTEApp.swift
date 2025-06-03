@@ -19,10 +19,14 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct POTEApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var authViewModel = AuthViewModel()
+    @StateObject private var menuViewModel = MenuViewModel.shared
     
     var body: some Scene {
         WindowGroup {
             LoginView()
+                .environmentObject(authViewModel)
+                .environmentObject(menuViewModel)
         }
     }
 }

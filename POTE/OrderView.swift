@@ -3,8 +3,9 @@ import SwiftUI
 struct OrderView: View {
     @ObservedObject var viewModel: OrderViewModel
     @EnvironmentObject var menuViewModel: MenuViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.dismiss) var dismiss
-    @Binding var navigateToLanding: Bool // To pop back to LandingView
+    @Binding var navigateToLanding: Bool
     @State private var isLogoVisible = false
     @State private var buttonTappedId: String?
     @State private var showPaymentView = false
@@ -43,11 +44,17 @@ struct OrderView: View {
                             viewModel.orderNumber = orderNumber
                             Task {
                                 do {
-                                    try await viewModel.saveOrder(cashierId: "test_cashier")
+                                    let cashierId = authViewModel.cashier?.employeeId ?? "unknown"
+                                    print("OrderView: Saving order with cashierId: \(cashierId) for Pending payment")
+                                    try await viewModel.saveOrder(
+                                        cashierId: cashierId,
+                                        paymentType: "Pending",
+                                        paymentId: nil
+                                    )
                                     showOrderNumberPrompt = false
                                     showPaymentView = true
                                 } catch {
-                                    print("Failed to save order: \(error)")
+                                    print("OrderView: Failed to save order: \(error)")
                                 }
                             }
                         }
@@ -56,20 +63,19 @@ struct OrderView: View {
                         showOrderNumberPrompt = false
                     }
                 )
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
             }
             .sheet(isPresented: $showPaymentView) {
                 PaymentView(
-                    amount: Int(viewModel.total * 100), // Convert to cents
+                    amount: Int(viewModel.total * 100),
                     orderViewModel: viewModel
                 )
                 .environmentObject(menuViewModel)
+                .environmentObject(authViewModel)
             }
         }
     }
 }
-
-// MARK: - Subviews
 
 struct HeaderView: View {
     @Binding var isLogoVisible: Bool
@@ -164,7 +170,7 @@ struct BottomBar: View {
             // Action Buttons
             HStack(spacing: 24) {
                 Button(action: {
-                    navigateToLanding = true // Pop back to LandingView
+                    navigateToLanding = true
                 }) {
                     HStack {
                         Image(systemName: "arrow.left.circle.fill")
@@ -231,71 +237,113 @@ struct BottomBar: View {
     }
 }
 
-struct OrderItemRow: View {
-    let orderItem: OrderItem
-    let itemName: String
-    let isTapped: Bool
-    let onRemove: () -> Void
-    
-    var body: some View {
-        HStack {
-            Text("\(itemName) x\(orderItem.quantity)")
-                .font(.system(size: 18, weight: .regular))
-                .foregroundColor(.primary)
-            Spacer()
-            Button(action: onRemove) {
-                Image(systemName: "minus.circle.fill")
-                    .font(.system(size: 24))
-                    .foregroundColor(Color(hex: "#FF6200"))
-                    .scaleEffect(isTapped ? 0.9 : 1.0)
-            }
-        }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-    }
-}
-
 struct OrderNumberPromptView: View {
     @Binding var orderNumberInput: String
     let onConfirm: () -> Void
     let onCancel: () -> Void
     
     var body: some View {
-        VStack(spacing: 24) {
-            Text("Enter Order Number")
-                .font(.system(size: 24, weight: .bold))
-                .foregroundColor(.primary)
-            
-            TextField("Order Number", text: $orderNumberInput)
-                .textFieldStyle(.roundedBorder)
-                .keyboardType(.numberPad)
-                .padding(.horizontal, 32)
-                .frame(height: 48)
-            
-            HStack(spacing: 24) {
-                Button(action: onCancel) {
-                    Text("Cancel")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color(hex: "#FF6200"))
-                        .cornerRadius(12)
-                }
+        GeometryReader { geometry in
+            VStack(spacing: 15) {
+                // Title
+                Text("Enter Order Number")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(Color(hex: "#2E7D32"))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, 20)
                 
-                Button(action: onConfirm) {
-                    Text("Confirm")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color(hex: "#2E7D32"))
-                        .cornerRadius(12)
+                // Display Entered Number
+                Text(orderNumberInput.isEmpty ? "00" : orderNumberInput)
+                    .font(.system(size: 48, weight: .bold))
+                    .foregroundColor(.primary)
+                    .frame(width: min(geometry.size.width * 0.6, 300), height: 80)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 2)
+                    )
+                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    .padding(.horizontal, 40)
+                
+                // Numerical Keypad
+                LazyVGrid(columns: [
+                    GridItem(.flexible(), spacing: 2),
+                    GridItem(.flexible(), spacing: 2),
+                    GridItem(.flexible(), spacing: 2)
+                ], spacing: 2) {
+                    ForEach(1..<10) { number in
+                        Button(action: {
+                            if orderNumberInput.count < 2 {
+                                orderNumberInput += String(number)
+                            }
+                        }) {
+                            Text("\(number)")
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 90, height: 90)
+                                .background(Color.gray)
+                                .cornerRadius(12)
+                                .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
+                        }
+                    }
+                    Button(action: {
+                        orderNumberInput = ""
+                    }) {
+                        Text("Clear")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 90, height: 90)
+                            .background(Color(hex: "#FF6200"))
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
+                    }
+                    Button(action: {
+                        if orderNumberInput.count < 2 {
+                            orderNumberInput += "0"
+                        }
+                    }) {
+                        Text("0")
+                            .font(.system(size: 32, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 90, height: 90)
+                            .background(Color.gray)
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
+                    }
                 }
+                .padding(.horizontal, max(20, geometry.size.width * 0.05))
+                
+                // Action Buttons
+                HStack(spacing: 10) {
+                    Button(action: onCancel) {
+                        Text("Cancel")
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, minHeight: 60)
+                            .background(Color(hex: "#FF6200"))
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    }
+                    
+                    Button(action: onConfirm) {
+                        Text("Confirm")
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, minHeight: 60)
+                            .background(Color(hex: "#2E7D32"))
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    }
+                }
+                .padding(.horizontal, max(20, geometry.size.width * 0.05))
+                .padding(.vertical, 10)
+                
+                Spacer()
             }
+            .padding(.vertical, 10)
+            .background(Color(.systemBackground))
         }
-        .padding()
-        .background(Color(.systemBackground))
     }
 }
 
@@ -305,6 +353,7 @@ struct OrderView_Previews: PreviewProvider {
     static var previews: some View {
         OrderView(viewModel: OrderViewModel(), navigateToLanding: $navigateToLanding)
             .environmentObject(MenuViewModel.shared)
+            .environmentObject(AuthViewModel())
             .previewDevice(PreviewDevice(rawValue: "iPad (10th generation)"))
     }
 }

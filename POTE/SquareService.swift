@@ -60,7 +60,6 @@ class SquareService: NSObject, PaymentManagerDelegate {
     }
     
     func startPayment(amount: Int, viewController: UIViewController, completion: @escaping (Result<Payment, Error>) -> Void) {
-        // Prevent concurrent payments
         guard !isPaymentInProgress else {
             let error = NSError(domain: "", code: -3, userInfo: [NSLocalizedDescriptionKey: "A payment is already in progress"])
             print("Payment error: \(error.localizedDescription)")
@@ -79,7 +78,6 @@ class SquareService: NSObject, PaymentManagerDelegate {
             return
         }
         
-        // Ensure authorization before starting payment
         authorize { result in
             DispatchQueue.main.async {
                 switch result {
@@ -107,7 +105,71 @@ class SquareService: NSObject, PaymentManagerDelegate {
         }
     }
     
-    // PaymentManagerDelegate methods
+    func refundPayment(paymentId: String, amount: Int, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard !isPaymentInProgress else {
+            let error = NSError(domain: "", code: -3, userInfo: [NSLocalizedDescriptionKey: "A payment operation is in progress"])
+            DispatchQueue.main.async {
+                completion(.failure(error))
+            }
+            return
+        }
+        
+        let accessToken = Bundle.main.object(forInfoDictionaryKey: "SQUARE_ACCESS_TOKEN") as? String ?? ""
+        guard !accessToken.isEmpty else {
+            let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Missing Square access token"])
+            DispatchQueue.main.async {
+                completion(.failure(error))
+            }
+            return
+        }
+        
+        isPaymentInProgress = true
+        let url = URL(string: "https://connect.squareup.com/v2/refunds")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: Any] = [
+            "idempotency_key": UUID().uuidString,
+            "payment_id": paymentId,
+            "amount_money": [
+                "amount": amount,
+                "currency": "USD"
+            ]
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        } catch {
+            isPaymentInProgress = false
+            DispatchQueue.main.async {
+                completion(.failure(error))
+            }
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                self.isPaymentInProgress = false
+                if let error = error {
+                    print("Refund error: \(error.localizedDescription)")
+                    completion(.failure(error))
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Refund request failed"])
+                    print("Refund error: Invalid response")
+                    completion(.failure(error))
+                    return
+                }
+                
+                completion(.success(()))
+            }
+        }.resume()
+    }
+    
     func paymentManager(_ paymentManager: PaymentManager, didFinish payment: Payment) {
         print("Payment succeeded: \(payment.id)")
         DispatchQueue.main.async {

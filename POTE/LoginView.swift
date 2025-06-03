@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct LoginView: View {
-    @StateObject private var viewModel = AuthViewModel()
+    @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var menuViewModel: MenuViewModel
     @State private var email = "test@kactuskwenchers.com"
     @State private var password = "Test1234"
     @State private var isLogoVisible = false
@@ -46,7 +47,7 @@ struct LoginView: View {
                     // Login Button
                     Button(action: {
                         Task {
-                            await viewModel.login(email: email, password: password)
+                            await authViewModel.login(email: email, password: password)
                         }
                     }) {
                         Text("Login")
@@ -65,9 +66,9 @@ struct LoginView: View {
                             .padding(.horizontal, 32)
                             .frame(height: 56)
                     }
-                    .disabled(viewModel.isLoading)
+                    .disabled(authViewModel.isLoading)
                     
-                    if let errorMessage = viewModel.errorMessage {
+                    if let errorMessage = authViewModel.errorMessage {
                         Text(errorMessage)
                             .font(.system(size: 16))
                             .foregroundColor(.red)
@@ -75,7 +76,7 @@ struct LoginView: View {
                             .multilineTextAlignment(.center)
                     }
                     
-                    if viewModel.isLoading {
+                    if authViewModel.isLoading {
                         ProgressView()
                             .progressViewStyle(.circular)
                             .tint(Color(hex: "#2E7D32"))
@@ -85,9 +86,10 @@ struct LoginView: View {
                 // Navigation to LandingView
                 NavigationLink(
                     destination: LandingView()
-                        .environmentObject(MenuViewModel.shared),
+                        .environmentObject(menuViewModel)
+                        .environmentObject(authViewModel),
                     isActive: Binding(
-                        get: { viewModel.user != nil },
+                        get: { authViewModel.user != nil },
                         set: { _ in }
                     ),
                     label: { EmptyView() }
@@ -101,6 +103,8 @@ struct LoginView: View {
 struct LoginView_Previews: PreviewProvider {
     static var previews: some View {
         LoginView()
+            .environmentObject(AuthViewModel())
+            .environmentObject(MenuViewModel.shared)
             .previewDevice(PreviewDevice(rawValue: "iPad (10th generation)"))
     }
 }

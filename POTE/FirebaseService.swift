@@ -12,19 +12,36 @@ class FirebaseService {
     func login(email: String, password: String) async throws -> User {
         let result = try await Auth.auth().signIn(withEmail: email, password: password)
         let firebaseUser = result.user
-        
-        let userDoc = try await db.collection("users").document(firebaseUser.uid).getDocument()
+        return try await fetchUserData(userId: firebaseUser.uid)
+    }
+    
+    func fetchUserData(userId: String) async throws -> User {
+        let userDoc = try await db.collection("users").document(userId).getDocument()
         guard let userData = userDoc.data(),
               let email = userData["email"] as? String,
               let role = userData["role"] as? String else {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "User data not found"])
         }
+        return User(id: userId, email: email, role: role)
+    }
+    
+    func validateEmployeeId(_ employeeId: String) async throws -> Employee {
+        print("FirebaseService: Querying employees collection for employeeId: \(employeeId)")
+        let snapshot = try await db.collection("employees")
+            .whereField("employeeId", isEqualTo: employeeId)
+            .getDocuments()
         
-        return User(id: firebaseUser.uid, email: email, role: role)
+        print("FirebaseService: Query returned \(snapshot.documents.count) documents")
+        guard let document = snapshot.documents.first,
+              let employee = try? document.data(as: Employee.self) else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Employee not found"])
+        }
+        
+        return employee
     }
     
     func saveOrder(_ order: Order) async throws {
-        print("FirebaseService: Saving order with total: \(order.total)")
+        print("FirebaseService: Saving order with total: \(order.total), cashierId: \(order.cashierId)")
         try await db.collection("orders").document(order.id).setData([
             "id": order.id,
             "items": order.items.map { ["itemId": $0.itemId, "quantity": $0.quantity] },
@@ -32,7 +49,9 @@ class FirebaseService {
             "status": order.status,
             "timestamp": Timestamp(date: order.timestamp),
             "cashierId": order.cashierId,
-            "orderNumber": order.orderNumber as Any
+            "orderNumber": order.orderNumber as Any,
+            "paymentId": order.paymentId as Any,
+            "paymentType": order.paymentType as Any
         ])
         print("FirebaseService: Order saved successfully")
     }
@@ -49,5 +68,31 @@ class FirebaseService {
             }
         }
         return items
+    }
+    
+    func fetchOrders() async throws -> [Order] {
+        let snapshot = try await db.collection("orders")
+            .order(by: "timestamp", descending: true)
+            .getDocuments()
+        return snapshot.documents.compactMap { document in
+            try? document.data(as: Order.self)
+        }
+    }
+    
+    func searchOrders(orderNumber: Int, cashierId: String) async throws -> [Order] {
+        let snapshot = try await db.collection("orders")
+            .whereField("orderNumber", isEqualTo: orderNumber)
+            .whereField("cashierId", isEqualTo: cashierId)
+            .getDocuments()
+        return snapshot.documents.compactMap { document in
+            try? document.data(as: Order.self)
+        }
+    }
+    
+    func updateOrderStatus(orderId: String, status: String) async throws {
+        try await db.collection("orders").document(orderId).updateData([
+            "status": status,
+            "timestamp": Timestamp(date: Date())
+        ])
     }
 }
