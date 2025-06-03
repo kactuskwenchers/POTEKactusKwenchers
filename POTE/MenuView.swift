@@ -206,17 +206,42 @@ struct OrderSidebarView: View {
             }
             
             VStack(spacing: 10) {
-                HStack {
-                    Text("Total:")
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundColor(.primary)
-                    Spacer()
-                    Text("$\(String(format: "%.2f", orderViewModel.total))")
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundColor(.primary)
+                // Display breakdown: Product Total, Sales Tax, Subtotal
+                if !orderViewModel.orderItems.isEmpty {
+                    HStack {
+                        Text("Product Total:")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Text("$\(String(format: "%.2f", orderViewModel.productTotal))")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.primary)
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    HStack {
+                        Text("Sales Tax (\(String(format: "%.1f", orderViewModel.taxRate * 100))%):")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Text("$\(String(format: "%.2f", orderViewModel.taxAmount))")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.primary)
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    HStack {
+                        Text("Subtotal:")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Text("$\(String(format: "%.2f", orderViewModel.total))")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundColor(.primary)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
                 
                 if !orderViewModel.orderItems.isEmpty {
                     HStack(spacing: 10) {

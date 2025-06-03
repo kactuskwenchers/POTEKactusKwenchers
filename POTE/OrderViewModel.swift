@@ -5,6 +5,8 @@ import Combine
 class OrderViewModel: ObservableObject {
     @Published var orderItems: [OrderItem] = []
     @Published var total: Double = 0.0
+    @Published var productTotal: Double = 0.0 // Subtotal before tax
+    @Published var taxAmount: Double = 0.0 // Tax amount
     @Published var orderNumber: Int?
     @Published var taxRate: Double = UserDefaults.standard.double(forKey: "selectedTaxRate") / 100 // Load from UserDefaults
     private var cancellables = Set<AnyCancellable>()
@@ -28,12 +30,12 @@ class OrderViewModel: ObservableObject {
     }
     
     func calculateTotal() {
-        let subtotal = orderItems.reduce(0.0) { total, item in
+        productTotal = orderItems.reduce(0.0) { total, item in
             let price = MenuViewModel.shared.getMenuItem(forId: item.itemId)?.price ?? 0.0
             return total + (price * Double(item.quantity))
         }
-        let tax = subtotal * taxRate
-        total = subtotal + tax
+        taxAmount = productTotal * taxRate
+        total = productTotal + taxAmount
     }
     
     func setTaxRate(_ rate: Double) {
@@ -64,6 +66,8 @@ class OrderViewModel: ObservableObject {
     
     func resetOrder() {
         orderItems.removeAll()
+        productTotal = 0.0
+        taxAmount = 0.0
         total = 0.0
         orderNumber = nil
     }
